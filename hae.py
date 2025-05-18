@@ -13,7 +13,7 @@ MAX_TIME = 65
 
 # --- Repair function from LNS ---
 def repair_solution(distance_matrix, cycle1, cycle2, removed_nodes):
-    print(f"[Repair] Repairing with {len(removed_nodes)} removed nodes...")
+    #print(f"[Repair] Repairing with {len(removed_nodes)} removed nodes...")
     for node in removed_nodes:
         regret1, increase1, pos1 = calculate_regret(distance_matrix, cycle1, node)
         regret2, increase2, pos2 = calculate_regret(distance_matrix, cycle2, node)
@@ -43,12 +43,12 @@ def generate_initial_population(distance_matrix):
 
 def select_parents(population):
     i, j = random.sample(range(len(population)), 2)
-    print(f"[Select] Selected parents {i} and {j}")
+    #print(f"[Select] Selected parents {i} and {j}")
     return population[i], population[j]
 
 
 def recombine(parent1, parent2, distance_matrix):
-    print("[Recombine] Starting recombination...")
+    #print("[Recombine] Starting recombination...")
     p1_c1, p1_c2, _ = parent1
     p2_c1, p2_c2, _ = parent2
     y1 = p1_c1.copy()
@@ -72,9 +72,9 @@ def recombine(parent1, parent2, distance_matrix):
     all_nodes = set(p1_c1[1:-1] + p1_c2[1:-1])
     kept = set(y1[1:-1] + y2[1:-1])
     removed = list(all_nodes - kept)
-    print(f"[Recombine] Removed {len(removed)} nodes during pruning.")
+    #print(f"[Recombine] Removed {len(removed)} nodes during pruning.")
     y1, y2 = repair_solution(distance_matrix, y1, y2, removed)
-    print("[Recombine] Recombination finished.")
+    #print("[Recombine] Recombination finished.")
     return y1, y2
 
 
@@ -92,21 +92,21 @@ def hae(distance_matrix, max_time=MAX_TIME, use_local_search_after_recomb=True):
     population = generate_initial_population(distance_matrix)
     start = time.time(); iter_count = 0
     while time.time() - start < max_time:
-        iter_count += 1; print(f"[HAE] Iter {iter_count}")
+        iter_count += 1 # print(f"[HAE] Iter {iter_count}")
         p1, p2 = select_parents(population)
         y1, y2 = recombine(p1, p2, distance_matrix)
         if use_local_search_after_recomb:
-            print("[HAE] Local search...")
+            #print("[HAE] Local search...")
             (y1, y2), length, _ = local_search.steepest_original(distance_matrix, y1, y2)
         else:
-            print("[HAE] No local search.")
+            #print("[HAE] No local search.")
             length = target_function(y1, y2, distance_matrix)
         offspring = (y1, y2, length)
         if is_unique_and_better(offspring, population):
-            print(f"[HAE] Replaced worst with {length:.2f}")
+            #print(f"[HAE] Replaced worst with {length:.2f}")
             population[-1] = offspring; population.sort(key=lambda x: x[2])
-        else:
-            print("[HAE] Discarded offspring")
+        #else:
+            #print("[HAE] Discarded offspring")
     best = population[0]; total = time.time() - start
     print(f"[HAE] Done iters={iter_count}, time={total:.2f}s, best={best[2]:.2f}")
     return (best[0], best[1]), best[2], total, iter_count

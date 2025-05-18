@@ -2,9 +2,13 @@ import time
 import swaps as og_swaps
 from utils import cycle_length
 
-def steepest_original(distance_matrix, first_cycle, second_cycle):
+def steepest_original(distance_matrix, first_cycle, second_cycle, start_length=None):
     start_time = time.time()
-    best_length = cycle_length(first_cycle, distance_matrix) + cycle_length(second_cycle, distance_matrix)
+
+    if start_length is None:
+        best_length = cycle_length(first_cycle, distance_matrix) + cycle_length(second_cycle, distance_matrix)
+    else:
+        best_length = start_length
 
     improved = True
     while improved:

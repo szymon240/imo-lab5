@@ -155,7 +155,7 @@ def experiment_lab2(
         cycle2: list[int],
         alg: Callable[[np.ndarray, list[int], list[int], float], tuple[tuple[list[int], list[int]], int, float]],
         min_time: float | None = None,
-        runs=10,
+        runs=1,
         random=True
 ):
     lengths = []
@@ -181,6 +181,41 @@ def experiment_lab2(
 
     return avg_length, min(lengths), max(lengths), avg_times, min(times), max(times), best_solution
 
+# Wypisuje w porównaniu do lab2 jeszcze iteracje
+def experiment_lab4(
+        matrix: np.ndarray,
+        cycle1: list[int],
+        cycle2: list[int],
+        alg: Callable[[np.ndarray, list[int], list[int], float], tuple[tuple[list[int], list[int]], int, float, int]],
+        min_time: float | None = None,
+        runs=3,
+        random=True
+):
+    lengths = []
+    times = []
+    solutions = []
+    all_iterations = []
+
+    for _ in range(runs):
+        if random:
+            cycle1, cycle2, _ = initialize_random_cycles(matrix)
+
+        if min_time is None:
+            solution, length, time, iterations = alg(matrix, cycle1, cycle2)
+        else:
+            solution, length, iterations = alg(matrix, cycle1, cycle2, min_time)
+            time = min_time
+        lengths.append(length)
+        times.append(time)
+        solutions.append(solution)
+        all_iterations.append(iterations)
+
+    avg_length = sum(lengths) / runs
+    avg_times = sum(times) / runs
+    avg_iterations = sum(all_iterations) / runs
+    best_solution = solutions[lengths.index(min(lengths))]
+
+    return avg_length, min(lengths), max(lengths), avg_times, min(times), max(times), avg_iterations, min(all_iterations), max(all_iterations), best_solution
 
 def run_test_lab1(algorithm_name: str, distance_matrix: np.ndarray, positions: np.ndarray,
                   algorithm: Callable[[np.ndarray], tuple[list[int], list[int]]]):
@@ -219,6 +254,41 @@ def run_test_lab2(
     print(f"Average execution time: {avg_time:.4f} seconds")
     print(f"Best execution time: {min_time:.4f} seconds")
     print(f"Worst execution time: {max_time:.4f} seconds")
+
+    visualize_cycles(cycle1, cycle2, coords, f"{alg_name} - before", init_length, save=True)
+    visualize_cycles(best_solution[0], best_solution[1], coords, alg_name, min_length, save=True)
+
+    return min_time
+
+# Różni się od lab2 tym, że wypisuje jeszcze iteracje
+def run_test_lab4(
+        alg_name: str,
+        matrix: np.ndarray,
+        coords: np.ndarray,
+        cycle1: list[int],
+        cycle2: list[int],
+        alg: Callable[[np.ndarray, list[int], list[int], float], tuple[tuple[list[int], list[int]], int, float]],
+        min_time_alg: float | None = None
+) -> float:
+    init_length = target_function(cycle1, cycle2, matrix)
+
+    avg_length, min_length, max_length, avg_time, min_time, max_time, avg_iterations, min_iterations, max_iterations, best_solution = experiment_lab4(
+                                                                                                    matrix, 
+                                                                                                    cycle1,
+                                                                                                    cycle2, alg,
+                                                                                                    min_time_alg)
+
+    print(f"\n{alg_name}:")
+    print(f"Initial solution length: {init_length}")
+    print(f"Average solution length: {avg_length}")
+    print(f"Best solution length: {min_length}")
+    print(f"Worst solution length: {max_length}")
+    print(f"Average execution time: {avg_time:.4f} seconds")
+    print(f"Best execution time: {min_time:.4f} seconds")
+    print(f"Worst execution time: {max_time:.4f} seconds")
+    print(f"Average iterations: {avg_iterations}")
+    print(f"Min iterations: {min_iterations}")
+    print(f"Max iterations: {max_iterations}")
 
     visualize_cycles(cycle1, cycle2, coords, f"{alg_name} - before", init_length, save=True)
     visualize_cycles(best_solution[0], best_solution[1], coords, alg_name, min_length, save=True)
